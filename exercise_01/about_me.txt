@@ -1,2 +1,4 @@
 My name is Hamza
 I am studying MDF
+My hobby is playing football.
+My favorite programming language is Python.
