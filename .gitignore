@@ -1,0 +1,18 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Datasets (will be symlinked in later exercises)
+data/
+
+# Model checkpoints
+*.pth
+*.pt
+saved/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
