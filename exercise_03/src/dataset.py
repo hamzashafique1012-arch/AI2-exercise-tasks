@@ -43,25 +43,33 @@ class PlantWildDataset(Dataset):
             if os.path.isdir(os.path.join(root_dir, d))
         ])
 
-        # TODO: class-to-index mapping, and samples list.
+        # Task: class-to-index mapping, and samples list.
         #
         #
         #   Step 1: Create a dictionary mapping each class name to its
         #           integer index: {"apple_scab": 0, "tomato_blight": 1, ...}
         #           The indices follow the sorted order from Step 1.
         #           Store as self.class_to_idx.
-        self.class_to_idx = None
+        self.class_to_idx = {name: index for index, name in enumerate(self.classes)}
         #
         #   Step 2: Build a list of (file_path, label) tuples.
         #           For each class folder, loop over its files. For each file,
         #           store the full path and the integer label from Step 1.
         #           Store as self.samples.
-        self.samples = None
+        self.samples = []
+        for name in self.classes:
+            folder = os.path.join(root_dir, name)
+            for filename in sorted(os.listdir(folder)):
+                path = os.path.join(folder, filename)
+                if os.path.isfile(path) and filename.lower().endswith(
+                    (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff", ".webp")
+                ):
+                    self.samples.append((path, self.class_to_idx[name]))
         
 
     def __len__(self):
-        # TODO: Return the total number of samples.
-        pass
+        # Task: Return the total number of samples.
+        return len(self.samples)
 
     def __getitem__(self, idx):
         """
@@ -73,7 +81,7 @@ class PlantWildDataset(Dataset):
         Returns:
             tuple: (image_tensor, label)
         """
-        # TODO: Load one image and return it with its label.
+        # Task: Load one image and return it with its label.
         #
         #   Step 1: Get the file path and label from self.samples[idx].
         #   Step 2: Open the image with PIL and convert to "RGB".
@@ -81,7 +89,12 @@ class PlantWildDataset(Dataset):
         #           to RGB ensures a consistent 3-channel input.
         #   Step 3: Apply self.transform if it is not None.
         #   Step 4: Return (image, label).
-        pass
+        path, label = self.samples[idx]
+        with Image.open(path) as source:
+            image = source.convert("RGB")
+        if self.transform is not None:
+            image = self.transform(image)
+        return image, label
 
 
 # ===========================================================================

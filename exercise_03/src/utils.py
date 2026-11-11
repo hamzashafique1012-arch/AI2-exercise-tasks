@@ -39,17 +39,17 @@ def compute_accuracy(outputs, targets):
     Returns:
         float: Accuracy as a fraction between 0 and 1.
     """
-    # TODO: Compute accuracy from logits and targets.
+    # Task: Compute accuracy from logits and targets.
     #
     #   Step 1: Get predicted class for each sample. The predicted class
     #           is the index with the highest logit value — use .argmax(dim=1).
-    predictions = None
+    predictions = outputs.argmax(dim=1)
     #   Step 2: Compare predictions with targets to count correct ones.
     #           (predictions == targets) gives a boolean tensor.
     #           .sum() counts the True values. Use .item() to convert single-element tensors to Python floats.
-    correct = None
+    correct = (predictions == targets).sum().item()
     # Step 3: Get the toal count of the target (hint: .size(0)) and divide correct count by total count to compute accuracy
-    accuracy = None
+    accuracy = correct / targets.size(0)
     return accuracy
 
 
@@ -64,7 +64,7 @@ def save_checkpoint(model, optimizer, epoch, val_accuracy, filepath):
         val_accuracy (float): Validation accuracy at this epoch.
         filepath (str): Path to save the checkpoint.
     """
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    os.makedirs(os.path.dirname(os.fspath(filepath)) or ".", exist_ok=True)
     checkpoint = {
         "epoch": epoch,
         "model_state_dict": model.state_dict(),
@@ -86,7 +86,7 @@ def load_checkpoint(filepath, model, optimizer=None):
     Returns:
         dict: The loaded checkpoint dictionary.
     """
-    checkpoint = torch.load(filepath, weights_only=False)
+    checkpoint = torch.load(filepath, map_location="cpu", weights_only=True)
     model.load_state_dict(checkpoint["model_state_dict"])
     if optimizer is not None:
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])

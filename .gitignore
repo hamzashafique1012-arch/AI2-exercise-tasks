@@ -16,3 +16,7 @@ saved/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Generated training outputs
+outputs/checkpoints/
+outputs/logs/
