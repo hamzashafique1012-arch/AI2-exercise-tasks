@@ -31,7 +31,11 @@ SAMPLE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "exe
 #      and std=[0.229, 0.224, 0.225]
 #
 # Store the result in a variable called 'transform'.
-transform = None
+transform = transforms.Compose([
+    transforms.Resize((32, 32)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
 
 
 # ===========================================================================
@@ -52,23 +56,36 @@ class SimpleImageDataset(Dataset):
         #   Step 1: Create a mapping from class name to integer index.
         #           e.g. {"class_a": 0, "class_b": 1} (Hint: Use .enumerate() to get the index)
         #           Store as self.class_to_idx.
-        self.class_to_idx = None
+        self.class_to_idx = {name: idx for idx, name in enumerate(self.classes)}
         #   Step 2: Build a list of (file_path, label) tuples.
         #           Loop over each class folder, then over each file inside it.
         #           Store the full path and the integer label.
         #           Store as self.samples.
-        self.samples = None
+        self.samples = []
+        for class_name in self.classes:
+            class_dir = os.path.join(root_dir, class_name)
+            for filename in sorted(os.listdir(class_dir)):
+                path = os.path.join(class_dir, filename)
+                if os.path.isfile(path) and filename.lower().endswith(
+                    (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff", ".webp")
+                ):
+                    self.samples.append((path, self.class_to_idx[class_name]))
 
     def __len__(self):
         #   Return the total number of samples.
-        pass
+        return len(self.samples)
 
     def __getitem__(self, idx):
         #   Step 1: Get the file path and label from self.samples[idx].
         #   Step 2: Open the image with PIL and convert to "RGB".
         #   Step 3: Apply self.transform if it is not None.
         #   Step 4: Return (image, label).
-        pass
+        path, label = self.samples[idx]
+        with Image.open(path) as source:
+            image = source.convert("RGB")
+        if self.transform is not None:
+            image = self.transform(image)
+        return image, label
 
 if __name__ == "__main__":
     # ===========================================================================
@@ -76,8 +93,16 @@ if __name__ == "__main__":
     # ===========================================================================
     # Step 1: Instantiate SimpleImageDataset with SAMPLE_DIR
     #         and the transform from Task 1.
-    dataset = None
-    dataloader = None
+    dataset = SimpleImageDataset(SAMPLE_DIR, transform=transform)
+    print("Samples:", len(dataset), "Classes:", dataset.classes)
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=0)
+    images, labels = next(iter(dataloader))
+    print("Batch:", images.shape, labels)
+    image, label = dataset[0]
+    print("Sample:", image.shape, "min:", image.min().item(),
+          "max:", image.max().item(), "label:", label)
+    # Normalize computes (pixel - mean) / std per channel, so values can
+    # fall outside [0, 1] after centering and scaling.
     #
     # Step 2: Print len(dataset) and dataset.classes.
     #

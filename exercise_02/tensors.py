@@ -19,6 +19,9 @@ import torch
 # normal distribution. Pass the dimensions as arguments.
 
 
+images = torch.randn(2, 3, 224, 224)
+print("Task 1:", images.shape, images.dtype, images.device)
+
 # ===========================================================================
 # Task 2: Device Transfer
 # ===========================================================================
@@ -29,6 +32,11 @@ import torch
 # Step 2: Move the tensor using .to('cuda').
 # Step 3: Print the .device attribute to confirm.
 
+
+print("Device before:", images.device)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+images = images.to(device)
+print("Device after:", images.device)
 
 # ===========================================================================
 # Task 3: Indexing and Slicing
@@ -43,6 +51,11 @@ import torch
 #         Print its shape — should be (32, 32).
 
 
+batch = torch.randn(8, 3, 32, 32)
+fifth_image = batch[4]
+green_channel = fifth_image[1]
+print("Task 3:", fifth_image.shape, green_channel.shape)
+
 # ===========================================================================
 # Task 4: Permute — HWC to CHW
 # ===========================================================================
@@ -53,6 +66,10 @@ import torch
 #         You need to reorder dimensions: dim 2 → 0, dim 0 → 1, dim 1 → 2.
 # Step 2: Print both shapes to confirm (64, 64, 3) → (3, 64, 64).
 
+
+image_hwc = torch.randn(64, 64, 3)
+image_chw = image_hwc.permute(2, 0, 1)
+print("Task 4:", image_hwc.shape, image_chw.shape)
 
 # ===========================================================================
 # Task 5: Squeeze and Unsqueeze
@@ -68,6 +85,11 @@ import torch
 # so a single image needs unsqueeze before passing through.
 
 
+image = torch.randn(3, 128, 128)
+batched_image = image.unsqueeze(0)
+restored_image = batched_image.squeeze(0)
+print("Task 5:", batched_image.shape, restored_image.shape)
+
 # ===========================================================================
 # Task 6: Reshaping — Flatten
 # ===========================================================================
@@ -82,6 +104,10 @@ import torch
 # PyTorch infer the flattened size automatically.
 
 
+feature_maps = torch.randn(4, 16, 8, 8)
+flattened = feature_maps.reshape(feature_maps.size(0), -1)
+print("Task 6:", flattened.shape)
+
 # ===========================================================================
 # Task 7: Basic Math
 # ===========================================================================
@@ -93,3 +119,11 @@ import torch
 #    Compute the mean pixel value across the batch dimension (dim=0).
 #    Print the resulting shape — should be (3, 32, 32).
 #    This is how dataset mean is computed for normalization.
+
+a = torch.randn(3, 3)
+b = torch.randn(3, 3)
+print("Element-wise product:\n", a * b)
+print("Matrix product:\n", a @ b)
+pixel_batch = torch.randn(4, 3, 32, 32)
+mean_image = pixel_batch.mean(dim=0)
+print("Batch mean shape:", mean_image.shape)

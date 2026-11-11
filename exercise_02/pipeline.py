@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from model import TinyNet
-from dataset import SimpleImageDataset
+from dataset import SimpleImageDataset, SAMPLE_DIR, transform
 
 
 # ===========================================================================
@@ -26,52 +26,61 @@ from dataset import SimpleImageDataset
 # Step 1: Set device
 # Determine whether CUDA is available. Create a torch.device that is
 # 'cuda' if a GPU exists, otherwise 'cpu'. Print which device you're using.
-device = None
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Device:", device)
 
 # Step 2: Create dataset and dataloader
 # Instantiate SimpleImageDataset with root_dir='sample_images/'.
 # Apply a transform pipeline: Resize(32,32) → ToTensor() → Normalize().
 # Create a DataLoader with batch_size=2, shuffle=True, num_workers=0.
-dataset = None
-dataloader = None
+dataset = SimpleImageDataset(SAMPLE_DIR, transform=transform)
+dataloader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=0)
 
 # Step 3: Instantiate the model
 # Create TinyNet. The num_classes should match the number of classes
 # in your dataset — use len(dataset.classes) to get this automatically.
 # Move the model to the device from Step 1 using .to(device).
-model = None
+model = TinyNet(num_classes=len(dataset.classes)).to(device)
 
 # Step 4: Define loss function and optimizer
 # Use nn.CrossEntropyLoss() as the loss function.
 # Use torch.optim.Adam() with lr=0.001 as the optimizer.
 # Pass model.parameters() to the optimizer.
-criterion = None # this is the loss function
-optimizer = None
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Step 5: Fetch one batch
 # Get one batch of (images, labels) from the dataloader.
 # Move both to the device. Tensors are moved with .to(device).
-images, labels = None , None
+images, labels = next(iter(dataloader))
+images, labels = images.to(device), labels.to(device)
 
 # Step 6: Forward pass
 # Pass the images through the model to get output logits.
 # Print the output shape — should be [batch_size, num_classes].
-outputs = None
+outputs = model(images)
+print("Output shape:", outputs.shape)
 
 # Step 7: Compute loss
 # Pass (outputs, labels) to the loss function.
 # Print the loss value.
-loss = None
+loss = criterion(outputs, labels)
+print("Loss:", loss.item())
 
 # Step 8: Backward pass and optimizer step
 # Three calls in order: zero gradients, compute gradients, update weights.
 
 
+optimizer.zero_grad()
+loss.backward()
+optimizer.step()
+
 # Step 9: Print predictions
 # Get predicted class indices using .argmax(dim=1) on the outputs.
 # Print predicted classes and actual labels side by side.
 # They will likely not match — the model is untrained.
-predictions = None
+predictions = outputs.argmax(dim=1)
+print("Predictions:", predictions.tolist(), "Actual labels:", labels.tolist())
 
 # ===========================================================================
 # Verification
